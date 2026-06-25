@@ -49,7 +49,7 @@
 
   nav.main{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
   /* badge versione */
-  .cliente-cfg{font-size:12px;font-weight:700;color:#1e3a5f;background:#fff;border:1px solid var(--grigio-bordo);border-radius:8px;padding:4px 10px;min-width:150px;margin-right:6px;outline:none}
+  .cliente-cfg{font-size:12px;font-weight:700;color:#1e3a5f;background:#fff;border:1px solid var(--grigio-bordo);border-radius:8px;padding:4px 10px;min-width:450px;margin-right:6px;outline:none}
   .cliente-cfg:focus{border-color:#3b82f6}
   .cliente-cfg::placeholder{color:#94a3b8;font-weight:500}
   #badge-versione{font-size:10px;font-weight:700;letter-spacing:.4px;color:var(--grigio-medio);padding:3px 8px;border:1px solid var(--grigio-bordo);border-radius:12px;background:#f7f7f7;margin-right:6px}
@@ -336,7 +336,7 @@
   </a>
   <nav class="main">
     <input type="text" id="cliente-cfg" class="cliente-cfg" placeholder="Cliente…" title="Nome cliente / azienda" autocomplete="off">
-    <span id="badge-versione">vs160 · 25/06/2026</span>
+    <span id="badge-versione">vs163 · 25/06/2026</span>
     <button class="btn-salva-cfg" title="Salva configurazione come file JSON">💾 Salva</button>
     <label class="btn-carica-cfg" title="Carica configurazione vsn01 oppure importa JSON da Bilancio Energetico be41">📂 Carica / Import BE<input type="file" id="input-carica-cfg" accept=".json"></label>
     <button class="btn-pulisci-cfg" id="btn-pulisci" title="Azzera tutti i campi">🗑 Pulisci</button>
@@ -913,8 +913,11 @@
           <span class="vsection-caret">▾</span>
           <span class="vsection-title">Fotovoltaico - Accumulo - Wallbox</span>
           <button class="vc-info" type="button" tabindex="-1" title="Informazioni">i</button>
-          <div class="vc-info-pop">Impianto fotovoltaico e sistema di accumulo da installare. In modalità <strong>Previsionale</strong> i prezzi sono presi dal listino collegato; in modalità <strong>Reale</strong> dal preventivo del socio, inseriti a mano.</div>
+          <div class="vc-info-pop">Impianto fotovoltaico e sistema di accumulo da installare. In modalità <strong>Previsionale</strong> i prezzi sono presi dal listino collegato; in modalità <strong>Reale</strong> dal preventivo del socio, inseriti a mano.<span id="fv-import-name" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #cbd5e1;color:#1a5276;font-weight:700"></span></div>
         </div>
+
+        <button class="vc-importpdf" id="import-pdf-fv" type="button">⬆️ Importa preventivo PDF (FV · Accumulo · Wallbox)</button>
+        <input type="file" id="import-pdf-fv-file" accept="application/pdf" style="display:none">
 
         <div class="vcard warn-pair calc-fv" draggable="true">
           <span class="vcard-num"></span>
@@ -1022,7 +1025,7 @@
           <span class="vsection-caret">▾</span>
           <span class="vsection-title">Impianto termico</span>
           <button class="vc-info" type="button" tabindex="-1" title="Informazioni">i</button>
-          <div class="vc-info-pop">Voci di costo dell'impianto termico. <strong>Previsionale</strong>: valori dal foglio listino collegato. <strong>Reale</strong>: importa il preventivo PDF del socio.</div>
+          <div class="vc-info-pop">Voci di costo dell'impianto termico. <strong>Previsionale</strong>: valori dal foglio listino collegato. <strong>Reale</strong>: importa il preventivo PDF del socio.<span id="termico-import-name" style="display:none;margin-top:6px;padding-top:6px;border-top:1px solid #cbd5e1;color:#1a5276;font-weight:700"></span></div>
         </div>
         <button class="vc-importpdf" id="import-pdf-termico" type="button">⬆️ Importa preventivo PDF</button>
         <input type="file" id="import-pdf-file" accept="application/pdf" style="display:none">
@@ -1067,7 +1070,27 @@
           <div class="vc-info-pop">Sconto in fattura applicato al bollitore ACS.</div>
         </div>
 
+                <div class="vcard termico" draggable="true">
+          <span class="vcard-num"></span>
+          <div class="vcard-cells">
+            <div class="vc-name" contenteditable="true" role="textbox" tabindex="-1" data-placeholder="Voce…">CALDAIA A BIOMASSA</div>
+            <input class="vc-val prezzo-field termico-val" inputmode="numeric" data-unit="€" aria-label="Caldaia biomassa">
+          </div>
+          <button class="vc-info" type="button" tabindex="-1" title="Informazioni">i</button>
+          <div class="vc-info-pop">Generatore principale a biomassa (caldaia a pellet/legna/nocciolino).</div>
+        </div>
+
         <div class="vcard termico" draggable="true">
+          <span class="vcard-num"></span>
+          <div class="vcard-cells">
+            <div class="vc-name" contenteditable="true" role="textbox" tabindex="-1" data-placeholder="Voce…">SCONTO IN FATTURA CALDAIA A BIOMASSA</div>
+            <input class="vc-val prezzo-field termico-val sconto-ct" inputmode="numeric" data-unit="€" aria-label="Sconto in fattura caldaia biomassa">
+          </div>
+          <button class="vc-info" type="button" tabindex="-1" title="Informazioni">i</button>
+          <div class="vc-info-pop">Sconto in fattura applicato alla caldaia a biomassa.</div>
+        </div>
+
+<div class="vcard termico" draggable="true">
           <span class="vcard-num"></span>
           <div class="vcard-cells">
             <div class="vc-name" contenteditable="true" role="textbox" tabindex="-1" data-placeholder="Voce…">FILTRO IMPIANTO</div>
@@ -1922,37 +1945,41 @@
     // --- Calcolo Risparmio Termico (Bollette vs Proiezione) e nuovo costo elettrico PdC ---
     let risparmioTermicoAnnuo = 0;
     let nuovoCostoElettricoPdC = 0;
-    const btnFossile = document.querySelector('.inc-btns[data-inc="ctscen"] .inc-btn[data-val="fossile"]');
-    const isSpegniFossile = btnFossile && btnFossile.classList.contains('active');
-
-    if (isSpegniFossile) {
-        // 1. Legge le bollette manuali
+    // vsn161 — Risparmio termico SEMPRE attivo (non più vincolato allo scenario "Spegni fossile"):
+    //   • se ci sono le bollette (manuali in Sez. D o importate da BE) PREVALGONO (casi 2/3/4);
+    //   • in loro assenza si usa la PROIEZIONE automatica da Sezione A (caso 1.a): fabbisogno
+    //     stimato da superficie/classe/zona/cappotto × prezzo della "Fonte termica attuale" (listino).
+    {
         const spesaGas = numVal(document.querySelector('.vc-val[aria-label="Spesa gas annua"]')) || 0;
         const spesaGasolio = numVal(document.querySelector('.vc-val[aria-label="Spesa gasolio annua"]')) || 0;
         const spesaLegna = numVal(document.querySelector('.vc-val[aria-label="Spesa legna annua"]')) || 0;
         const spesaManualeTotale = spesaGas + spesaGasolio + spesaLegna;
+        const ddFonte = document.querySelector('.vc-fonte-fossile');
+        const fonte = ddFonte ? ddFonte.dataset.value : '';
+        const hasFonte = !!fonte && fonte !== 'nessuna';
 
+        // costo unitario €/kWh della fonte fossile attuale (dal listino)
+        let costoUnitario = 0;
+        if (fonte === 'metano') costoUnitario = listinoVal('prezzo_kwh_metano') || 0;
+        else if (fonte === 'gpl') costoUnitario = listinoVal('prezzo_kwh_gpl') || 0;
+        else if (fonte === 'gasolio') costoUnitario = listinoVal('prezzo_kwh_gasolio') || 0;
+        else if (fonte === 'legna') costoUnitario = listinoVal('prezzo_kwh_legna') || 0;
+        // fabbisogno termico usato per il costo PdC: dalle bollette se presenti (pill 1,2,5 ininfluenti),
+        // altrimenti dalla stima di Sezione A.
+        let fabbisognoPerPdC = FABBISOGNO_TERMICO;
         if (spesaManualeTotale > 0) {
+            // Bollette presenti → prevalgono sul previsionale
             risparmioTermicoAnnuo = spesaManualeTotale;
-        } else {
-            // Proiezione dal foglio listino
-            const ddFonte = document.querySelector('.vc-fonte-fossile');
-            const fonte = ddFonte ? ddFonte.dataset.value : 'nessuna';
-            let costoUnitario = 0;
-            
-            if (fonte === 'metano') costoUnitario = listinoVal('prezzo_kwh_metano') || 0;
-            else if (fonte === 'gpl') costoUnitario = listinoVal('prezzo_kwh_gpl') || 0;
-            else if (fonte === 'gasolio') costoUnitario = listinoVal('prezzo_kwh_gasolio') || 0;
-            else if (fonte === 'legna') costoUnitario = listinoVal('prezzo_kwh_legna') || 0;
-
+            if (costoUnitario > 0) fabbisognoPerPdC = spesaManualeTotale / costoUnitario;
+        } else if (hasFonte && FABBISOGNO_TERMICO > 0) {
+            // Nessuna bolletta → proiezione automatica da Sezione A (dal foglio listino)
             risparmioTermicoAnnuo = FABBISOGNO_TERMICO * costoUnitario;
         }
 
-        // Calcola anche quanto consumerà la nuova Pompa di Calore in base alla Tipologia Distributiva (SCOP)
-        if (FABBISOGNO_TERMICO > 0) {
+        // Nuovo costo elettrico della Pompa di Calore (SCOP da tipologia distributiva), sottratto al risparmio lordo
+        if (risparmioTermicoAnnuo > 0 && fabbisognoPerPdC > 0) {
             const scop = window.SCOP_PDC || 3.5;
-            const nuovoConsumoKwh = FABBISOGNO_TERMICO / scop;
-            nuovoCostoElettricoPdC = nuovoConsumoKwh * BP.prezzoKwh;
+            nuovoCostoElettricoPdC = (fabbisognoPerPdC / scop) * BP.prezzoKwh;
         }
     }
     
@@ -2472,78 +2499,177 @@
     if(e.target.classList && e.target.classList.contains('termico-val')) colorTermico(e.target);
   });
 
+  /* ===== IMPORT PREVENTIVO PDF — modulo condiviso (Sezioni G e H) — vs163 =====
+     Pannello mobile non-bloccante (trascinabile, pagina sotto scrollabile), suggeritore
+     (pre-seleziona, deselezionabile), pulsante Interrompi import, numero preventivo,
+     parser che usa l'Id se presente altrimenti il codice. ===== */
+  function __parsePreventivo(raw){
+    let U=raw.replace(/\s+/g,' ');
+    U=U.replace(/Pagina\s*\d+\s*\/\s*\d+/gi,' ').replace(/powered by Order Sender[^ ]*/gi,' ');
+    const isTesser=/\bId\b\s+Codice/i.test(U);
+    let start=U.search(/(ARTICOLO\s+DESCRIZIONE|Id\s+Codice\s+Descrizione)/i);
+    if(start>=0){ const h=U.slice(start).match(/(ARTICOLO\s+DESCRIZIONE[^]*?IVA|Id\s+Codice\s+Descrizione[^]*?Totale\s*€)/i); U=U.slice(start+(h?h[0].length:0)); }
+    let end=U.search(/TOTALE\s+IMPONIBILE|IMPONIBILE\s+EUR|RIEPILOGO|TOTALE\s+CHIUSURA/i); if(end>=0) U=U.slice(0,end);
+    U=U.replace(/ARTICOLO\s+DESCRIZIONE\s+UM\s+Q\.?TA\s+PR\.?\s*UN\.?\s+PREZZO\s+IVA/gi,' ');
+    U=' '+U.trim()+' ';
+    const AMT='-?\\d{1,3}(?:\\.\\d{3})*,\\d{2}';
+    const Are=new RegExp(AMT,'g');
+    function powers(span){ const out=[]; const kwh=span.match(/(\d+(?:[.,]\d+)?)\s*kWh/i); if(kwh) out.push(kwh[1].replace('.',',')+' kWh'); const kw=span.match(/(\d+(?:[.,]\d+)?)\s*kW\b/i); if(kw&&!/kWh/i.test(kw[0])) out.push(kw[1].replace('.',',')+' kW'); const lt=span.match(/(\d+(?:[.,]\d+)?)\s*(?:litri|lt\b|l\b)/i); if(lt) out.push(lt[1]+' lt'); return out.join(' · '); }
+    function descr(span){ return span.replace(new RegExp(AMT,'g'),' ').replace(/\b(NR|PZ|MQ|ML|KG|nr|pz)\b/g,' ').replace(/\d+,\d{3,}/g,' ').replace(/\s{2,}/g,' ').replace(/\s+\d[\d\s]*$/,'').trim().slice(0,80); }
+    const items=[];
+    if(isTesser){
+      const isCode=c=>/^[A-Za-z0-9][A-Za-z0-9.\/\-]*$/.test(c)&&(/[A-Za-z]/.test(c)||/-/.test(c));
+      const stt=[]; let pos=0,exp=1,miss=0;
+      while(exp<=60&&miss<6){ const re=new RegExp('\\s'+exp+'\\s+(\\S+)','g'); re.lastIndex=pos; const m=re.exec(U);
+        if(m&&isCode(m[1])){ stt.push({idx:m.index,id:String(exp),code:m[1],ce:re.lastIndex}); pos=re.lastIndex; exp++; miss=0; } else { exp++; miss++; } }
+      for(let k=0;k<stt.length;k++){ const s=stt[k],e=(k+1<stt.length)?stt[k+1].idx:U.length; const span=U.slice(s.idx,e);
+        const a=span.replace(/\d+,\d{3,}/g,' ').match(Are); const tot=a?parseFloat(a[a.length-1].replace(/\./g,'').replace(',','.')):0;
+        items.push({id:s.id,code:s.code,descr:descr(U.slice(s.ce,e)),pot:powers(span),tot}); }
+    } else {
+      const tailRe=new RegExp('('+AMT+')\\s+('+AMT+')\\s+('+AMT+')','g');
+      let m,prevEnd=0;
+      while((m=tailRe.exec(U))){ const rowSpan=U.slice(prevEnd,m.index+m[0].length);
+        const codeM=rowSpan.match(/\b(\d{6,}|[A-Z0-9]+(?:[\-\/][A-Z0-9]+)+|[A-Z]{2,}[A-Z0-9]*\d[A-Z0-9]*)\b/);
+        const code=codeM?codeM[1]:'(?)'; const totale=parseFloat(m[3].replace(/\./g,'').replace(',','.'));
+        const afterCode=codeM?rowSpan.slice(rowSpan.indexOf(codeM[1])+codeM[1].length):rowSpan;
+        const dsp=afterCode.slice(0,afterCode.length-m[0].length);
+        items.push({id:'',code,descr:descr(dsp),pot:powers(rowSpan),tot:totale}); prevEnd=m.index+m[0].length; }
+    }
+    return items.filter(it=>!isNaN(it.tot)&&it.tot!==0);
+  }
+  function __prevNum(raw){ const U=raw.replace(/\s+/g,' ');
+    const m=U.match(/preventivo\s*n[°.\s]*([0-9]{1,8})/i)||U.match(/\bN[°]\s*([0-9]{2,8})/i)||U.match(/preventivo[^0-9]{0,15}([0-9]{3,8})/i);
+    return m?m[1]:''; }
+  function __eur(v){ return v.toLocaleString('it-IT',{minimumFractionDigits:2,maximumFractionDigits:2})+' €'; }
+  function __enableDrag(handle, el){
+    handle.addEventListener('mousedown', e=>{ if(e.target.closest('button')) return;
+      const r=el.getBoundingClientRect(); el.style.left=r.left+'px'; el.style.top=r.top+'px'; el.style.transform='none';
+      const ox=e.clientX-r.left, oy=e.clientY-r.top;
+      function mv(ev){ el.style.left=Math.max(0,ev.clientX-ox)+'px'; el.style.top=Math.max(0,ev.clientY-oy)+'px'; }
+      function up(){ document.removeEventListener('mousemove',mv); document.removeEventListener('mouseup',up); }
+      document.addEventListener('mousemove',mv); document.addEventListener('mouseup',up); e.preventDefault(); });
+  }
+  function __assocPicker(cfg){
+    if(cfg.clearBefore) cfg.clearBefore();
+    let remaining=cfg.items.slice(); let step=0;
+    const panel=document.createElement('div');
+    panel.style.cssText='position:fixed;top:64px;left:50%;transform:translateX(-50%);width:600px;max-width:94vw;max-height:84vh;display:flex;flex-direction:column;background:#fff;border:1px solid #94a3b8;border-radius:14px;box-shadow:0 24px 70px rgba(0,0,0,.4);z-index:99999;font-family:inherit';
+    document.body.appendChild(panel);
+    const checked=()=>[...panel.querySelectorAll('input[type=checkbox]:checked')].map(cb=>remaining[+cb.dataset.ix]);
+    function updFoot(){ const s=checked().reduce((a,it)=>a+it.tot,0); const el=panel.querySelector('#ap-sum'); if(el) el.textContent='Selezionato: '+__eur(s); }
+    function suggests(it,st){ const kw=st.kw||[]; if(!kw.length) return false; const h=(it.code+' '+it.descr).toUpperCase(); if(!kw.some(k=>h.indexOf(k.toUpperCase())>=0)) return false; if(st.neg===true) return it.tot<0; if(st.neg===false) return it.tot>=0; return true; }
+    function render(){
+      const st=cfg.steps[step]; panel.innerHTML='';
+      const head=document.createElement('div'); head.style.cssText='padding:13px 16px;border-bottom:1px solid #e2e8f0;cursor:move;user-select:none;background:#f1f5f9;border-radius:14px 14px 0 0';
+      head.innerHTML='<div style="font-size:10px;color:#475569;font-weight:700">'+cfg.titolo+(cfg.prevNum?(' · Preventivo n. '+cfg.prevNum):'')+(cfg.fileName?(' · '+cfg.fileName):'')+'  —  ⠿ trascina per spostare</div>'
+        +'<div style="font-size:11px;color:#64748b;font-weight:700;margin-top:5px">PASSO '+(step+1)+' / '+cfg.steps.length+' · '+remaining.length+' voci rimanenti</div>'
+        +'<div style="font-size:16px;font-weight:800;color:#0f172a;margin-top:2px">Pill '+st.num+' — '+st.label+'</div>';
+      panel.appendChild(head); __enableDrag(head, panel);
+      const body=document.createElement('div'); body.style.cssText='overflow:auto;padding:8px 10px;flex:1';
+      remaining.forEach((it,ix)=>{
+        const sug=suggests(it,st);
+        const row=document.createElement('label'); row.style.cssText='display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid '+(sug?'#fcd34d':'transparent')+';background:'+(sug?'#fffbeb':'transparent');
+        row.onmouseover=()=>{ if(!sug) row.style.background='#f1f5f9'; }; row.onmouseout=()=>{ row.style.background=sug?'#fffbeb':'transparent'; };
+        const cb=document.createElement('input'); cb.type='checkbox'; cb.dataset.ix=ix; cb.checked=sug; cb.style.cssText='width:17px;height:17px;flex:0 0 auto'; cb.addEventListener('change',updFoot);
+        const txt=document.createElement('div'); txt.style.cssText='flex:1;min-width:0';
+        const tag=(it.id?(it.id+'. '):'')+it.code+(it.pot?('  ·  '+it.pot):'')+(sug?'  ✨ suggerito':'');
+        txt.innerHTML='<div style="font-size:12px;font-weight:700;color:#1e293b">'+tag+'</div><div style="font-size:11px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+it.descr+'</div>';
+        const amt=document.createElement('div'); amt.style.cssText='font-size:13px;font-weight:700;white-space:nowrap;color:'+(it.tot<0?'#15803d':'#0f172a'); amt.textContent=__eur(it.tot);
+        row.appendChild(cb); row.appendChild(txt); row.appendChild(amt); body.appendChild(row);
+      });
+      if(!remaining.length){ const em=document.createElement('div'); em.style.cssText='padding:20px;text-align:center;color:#64748b;font-size:13px'; em.textContent='Nessuna voce rimanente.'; body.appendChild(em); }
+      panel.appendChild(body);
+      const foot=document.createElement('div'); foot.style.cssText='padding:12px 16px;border-top:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap';
+      foot.innerHTML='<div id="ap-sum" style="font-size:13px;font-weight:800;color:#15803d">Selezionato: 0,00 €</div>';
+      const btns=document.createElement('div'); btns.style.cssText='display:flex;gap:8px;flex-wrap:wrap';
+      const last=step>=cfg.steps.length-1;
+      const stop=document.createElement('button'); stop.textContent='✕ Interrompi import'; stop.style.cssText='padding:9px 12px;border:1px solid #ef4444;border-radius:9px;background:#fff;color:#b91c1c;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px'; stop.onclick=()=>stopImport();
+      const skip=document.createElement('button'); skip.textContent=last?'Salta':'Salta →'; skip.style.cssText='padding:9px 12px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px'; skip.onclick=()=>commit(true);
+      const ok=document.createElement('button'); ok.textContent=last?'Assegna e chiudi':'Assegna e continua →'; ok.style.cssText='padding:9px 12px;border:none;border-radius:9px;background:#2471a3;color:#fff;font-weight:700;cursor:pointer;font-family:inherit;font-size:12px'; ok.onclick=()=>commit(false);
+      btns.appendChild(stop); btns.appendChild(skip); btns.appendChild(ok); foot.appendChild(btns); panel.appendChild(foot);
+      updFoot();
+    }
+    function close(){ if(panel.parentNode) document.body.removeChild(panel); if(typeof updateSaldi==='function') updateSaldi(); if(typeof computeBusinessPlan==='function') computeBusinessPlan(); }
+    function commit(skip){
+      const st=cfg.steps[step];
+      if(!skip){ const sel=checked(); const sum=sel.reduce((a,it)=>a+it.tot,0); st.apply(sum); const set=new Set(sel); remaining=remaining.filter(it=>!set.has(it)); }
+      step++;
+      if(step>=cfg.steps.length){ if(cfg.onFinish) cfg.onFinish(remaining); close(); alert(cfg.finishMsg?cfg.finishMsg(remaining):'Import completato.'); }
+      else render();
+    }
+    function stopImport(){ close(); alert('Import interrotto. Le voci già associate sono state mantenute (usa Pulisci per azzerarle).'); }
+    render();
+  }
+
+  /* --- Handler import Sezione H (Impianto termico) --- */
   (function(){
-    const btn=document.getElementById('import-pdf-termico');
-    const file=document.getElementById('import-pdf-file');
-    if(!btn||!file) return;
-    btn.addEventListener('click', ()=>file.click());
+    const btn=document.getElementById('import-pdf-termico'); const file=document.getElementById('import-pdf-file'); if(!btn||!file) return;
+    const SUG={
+      'Pompa di calore':{kw:['POMPA DI CALORE','UNITEC','PLAY SMALL','IBRID'],neg:false},
+      'Sconto in fattura pompa di calore':{kw:['UNITEC','PLAY','PDC'],neg:true},
+      'Caldaia biomassa':{kw:['CALDAIA','BIOMASSA','KALORINA','TATANO','PELLET','NOCCIOLINO','LEGNA'],neg:false},
+      'Sconto in fattura caldaia biomassa':{kw:['KALORINA','TATANO','BIOMASSA','CALDAIA'],neg:true},
+      'Bollitore ACS':{kw:['BOLLITORE','SCALDACQUA','ACS'],neg:false},
+      'Sconto in fattura bollitore ACS':{kw:['BOLLITORE'],neg:true},
+      'Filtro impianto':{kw:['FILTRO'],neg:false},
+      'Lavaggio impianto di riscaldamento':{kw:['LAVAGGIO'],neg:false},
+      'Accumulo inerziale':{kw:['INERZIALE','SERBATOIO'],neg:false},
+      'Volano termico':{kw:['VOLANO','PUFFER'],neg:false},
+      'Collegamenti elettrici pompa di calore':{kw:['COLLEGAMENTI ELETTRIC','ALLACCIAMENTI','AUTOMAZIONE ELETTRIC'],neg:false},
+      'Materiale elettrico cablaggio':{kw:['CABLAGGIO','MATERIALE ELETTRIC'],neg:false},
+      'Kit installazione riscaldamento e sanitario':{kw:['KIT','MISCELATORE','CIRCOLATORE','VASO ESPANSIONE','COLLAUDO'],neg:false}
+    };
+    function setName(name,prevNum){ const el=document.getElementById('termico-import-name'); if(el){ el.textContent='📄 '+(prevNum?('Preventivo n. '+prevNum+' · '):'')+name; el.style.display='block'; } }
+    function applyVal(el,val){ if(!el) return; el.value=(val!==0)?fmtVal(val.toFixed(2).replace('.',','),el.dataset.unit):''; if(typeof colorTermico==='function') colorTermico(el); }
+    btn.addEventListener('click',()=>file.click());
     file.addEventListener('change', async e=>{
       const f=e.target.files[0]; if(!f) return;
-      if(!window.pdfjsLib){ alert('Libreria PDF non disponibile (connessione assente?).'); return; }
+      if(!window.pdfjsLib){ alert('Libreria PDF non disponibile (connessione assente?).'); e.target.value=''; return; }
       try{
         pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        const buf=await f.arrayBuffer();
-        const pdf=await pdfjsLib.getDocument({data:buf}).promise;
-        let text='';
-        for(let p=1;p<=pdf.numPages;p++){ const pg=await pdf.getPage(p); const tc=await pg.getTextContent(); text+=tc.items.map(i=>i.str).join(' ')+'\n'; }
-        const U=text.toUpperCase().replace(/\s+/g,' ');
-        const MAP=CONFIG.termico;   
-        const codes=Object.values(MAP).map(o=>o.code);
-        const pos=codes.map(c=>({c,i:U.indexOf(c)})).filter(o=>o.i>=0).sort((a,b)=>a.i-b.i);
-        const segEnd={}; pos.forEach((o,k)=>{ segEnd[o.c]=(k+1<pos.length)?pos[k+1].i:U.length; });
-        const AMT=/-?\d{1,3}(?:\.\d{3})*,\d{2}/g;
-        function pickFrom(seg){ const a=seg.match(AMT); if(!a) return null; return a.length>=3 ? a[2] : a[a.length-1]; }   
-        function valueFor(code,kw){
-          const start=U.indexOf(code);
-          if(start>=0) return pickFrom(U.slice(start, segEnd[code]||U.length));
-          for(const k of kw){ const ki=U.indexOf(k.toUpperCase()); if(ki>=0) return pickFrom(U.slice(ki, ki+120)); }
-          return null;
-        }
-        let n=0, missing=[];
-        document.querySelectorAll('.termico').forEach(card=>{
-          const inp=card.querySelector('.termico-val');
-          const m=MAP[inp.getAttribute('aria-label')];
-          if(!m){ return; }
-          const amt=valueFor(m.code, m.kw);
-          if(amt){
-            const num=parseFloat(amt.replace(/\./g,'').replace(',','.'));
-            if(!isNaN(num)){ inp.value=fmtVal(String(num).replace('.',','), inp.dataset.unit); colorTermico(inp); n++; return; }
-          }
-          missing.push(card.querySelector('.vc-name').textContent);
+        const buf=await f.arrayBuffer(); const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+        let text=''; for(let p=1;p<=pdf.numPages;p++){ const pg=await pdf.getPage(p); const tc=await pg.getTextContent(); text+=tc.items.map(i=>i.str).join(' ')+'\n'; }
+        const items=__parsePreventivo(text); if(!items.length){ alert('Nessuna voce riconosciuta nel preventivo.'); e.target.value=''; return; }
+        const prevNum=__prevNum(text); setName(f.name,prevNum);
+        const cards=[...document.querySelectorAll('.vcard.termico')].filter(c=>{ const i=c.querySelector('.termico-val'); return i&&i.getAttribute('aria-label')!=='Varie'; });
+        const steps=cards.map(card=>{ const inp=card.querySelector('.termico-val'); const aria=inp.getAttribute('aria-label'); const numEl=card.querySelector(':scope > .vcard-num'); const nameEl=card.querySelector('.vc-name'); const sg=SUG[aria]||{kw:[]};
+          return { num:numEl?numEl.textContent:'?', label:nameEl?nameEl.textContent.trim():aria, kw:sg.kw, neg:sg.neg, apply:(sum)=>applyVal(inp,sum) }; });
+        __assocPicker({ titolo:'Impianto termico (H)', prevNum, fileName:f.name, items, steps,
+          clearBefore:()=>document.querySelectorAll('.termico-val').forEach(i=>{ i.value=''; if(typeof colorTermico==='function') colorTermico(i); }),
+          onFinish:(left)=>{ if(left.length){ const v=left.reduce((a,it)=>a+it.tot,0); applyVal(document.querySelector('.termico-val[aria-label="Varie"]'),v); } },
+          finishMsg:(left)=>{ let m='Import completato.'; if(left.length){ const v=left.reduce((a,it)=>a+it.tot,0); m+='\n'+left.length+' voci non assegnate sommate in “Varie” ('+__eur(v)+').'; } return m; }
         });
-        // ── Pill 38 "Varie": righe del preventivo con codice articolo NON tra le voci note ──
-        // Individua i codici articolo (6+ cifre); per ogni riga non riconosciuta prende
-        // l'ultimo importo (totale riga) e li somma. Escluse righe totale/IVA/imponibile.
-        const knownCodes = new Set(Object.values(MAP).map(o=>o.code));
-        const _allCodes=[]; let _cm; const _codeRe=/\b\d{6,}\b/g;
-        while((_cm=_codeRe.exec(U))!==null){ _allCodes.push({c:_cm[0], i:_cm.index}); }
-        _allCodes.sort((a,b)=>a.i-b.i);
-        let varie=0; const varieList=[];
-        for(let k=0;k<_allCodes.length;k++){
-          const cur=_allCodes[k];
-          if(knownCodes.has(cur.c)) continue;                 // voce nota: gia gestita sopra
-          const end=(k+1<_allCodes.length)?_allCodes[k+1].i:U.length;
-          let seg=U.slice(cur.i, Math.min(end, cur.i+250));
-          // taglia la riga prima dell'eventuale blocco totali/IVA (che non ha codice)
-          const _bad=seg.search(/TOTALE|IMPONIBILE|\bIVA\b|ACCONTO|\bSALDO\b|RIPORT|ARROTOND|OMAGGIO|SPESE DI/);
-          if(_bad>=0) seg=seg.slice(0,_bad);
-          const a=seg.match(/-?\d{1,3}(?:\.\d{3})*,\d{2}/g);
-          if(!a) continue;
-          const num=parseFloat(a[a.length-1].replace(/\./g,'').replace(',','.'));
-          if(isNaN(num)||num===0) continue;
-          varie+=num; varieList.push(cur.c+'='+a[a.length-1]);
-        }
-        varie=Math.round(varie*100)/100;
-        const varieInp=document.querySelector('.termico-val[aria-label="Varie"]');
-        if(varieInp){
-          varieInp.value = varie>0 ? fmtVal(String(varie).replace('.',','), varieInp.dataset.unit) : '';
-          if(typeof colorTermico==='function') colorTermico(varieInp);
-        }
-        if(typeof updateSaldi==='function') updateSaldi();
-        const _totVoci=document.querySelectorAll('.termico:not(.termico-varie)').length;
-        alert('Import preventivo n.'+( (U.match(/PREVENTIVO N\.?\s*(\d+)/)||[])[1]||'?' )+': '+n+'/'+_totVoci+' voci valorizzate.'
-          + (varie>0 ? ('\nVarie (non abbinate): '+fmtVal(String(varie).replace('.',','),'€')+' — '+varieList.length+' importi') : '')
-          + (missing.length?('\nNon trovate: '+missing.join(', ')):''));
+      }catch(err){ alert('Errore lettura PDF: '+err.message); }
+      e.target.value='';
+    });
+  })();
+
+  /* --- Handler import Sezione G (FV/Accumulo/Wallbox) --- */
+  (function(){
+    const btn=document.getElementById('import-pdf-fv'); const file=document.getElementById('import-pdf-fv-file'); if(!btn||!file) return;
+    const TGT=[
+      {sel:'.calc-fv .fv-prezzo', name:'Fotovoltaico', kw:['MODULO','FOTOVOLT','PANNELL','INVERTER','CAVO SOLARE','PROFILO','MORSETTO','FISSAGGIO','CONNETTORE','QUADRO','OTTIMIZZAT','STRINGA']},
+      {sel:'.calc-acc .acc-prezzo', name:'Accumulo', kw:['POWERWALL','ACCUMULO','BATTERIA','STORAGE','METER','GATEWAY']},
+      {sel:'.calc-lv .lv-prezzo', name:'Linea vita', kw:['LINEA VITA','LINEAVITA']},
+      {sel:'.calc-ap .ap-prezzo', name:'Rete antipiccione', kw:['ANTIPICCIONE','PICCIONE']},
+      {sel:'.vc-val[aria-label="Wallbox base uso privato"]', name:'Wallbox', kw:['WALLBOX','WALL BOX','RICARICA']}
+    ];
+    const pillNum=sel=>{ const el=document.querySelector(sel); const c=el&&el.closest('.vcard'); const b=c&&c.querySelector(':scope > .vcard-num'); return b?b.textContent:'?'; };
+    function setName(name,prevNum){ const el=document.getElementById('fv-import-name'); if(el){ el.textContent='📄 '+(prevNum?('Preventivo n. '+prevNum+' · '):'')+name; el.style.display='block'; } }
+    function applyField(sel,val){ const el=document.querySelector(sel); if(!el) return; el.value=val>0?fmtVal(val.toFixed(2).replace('.',','),el.dataset.unit):''; if(typeof touchCard==='function') touchCard(el); }
+    btn.addEventListener('click',()=>file.click());
+    file.addEventListener('change', async e=>{
+      const f=e.target.files[0]; if(!f) return;
+      if(!window.pdfjsLib){ alert('Libreria PDF non disponibile (connessione assente?).'); e.target.value=''; return; }
+      try{
+        pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const buf=await f.arrayBuffer(); const pdf=await pdfjsLib.getDocument({data:buf}).promise;
+        let text=''; for(let p=1;p<=pdf.numPages;p++){ const pg=await pdf.getPage(p); const tc=await pg.getTextContent(); text+=tc.items.map(i=>i.str).join(' ')+'\n'; }
+        const items=__parsePreventivo(text); if(!items.length){ alert('Nessuna voce riconosciuta nel preventivo.'); e.target.value=''; return; }
+        const prevNum=__prevNum(text); setName(f.name,prevNum);
+        const steps=TGT.map(t=>({ num:pillNum(t.sel), label:t.name, kw:t.kw, neg:false, apply:(sum)=>applyField(t.sel,sum) }));
+        __assocPicker({ titolo:'FV · Accumulo · Wallbox (G)', prevNum, fileName:f.name, items, steps,
+          onFinish:(left)=>{}, finishMsg:(left)=>{ let m='Import completato.'; if(left.length) m+='\n'+left.length+' voci non assegnate (ignorate): '+left.map(x=>x.code).join(', '); return m; } });
       }catch(err){ alert('Errore lettura PDF: '+err.message); }
       e.target.value='';
     });
