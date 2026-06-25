@@ -62,7 +62,8 @@
     background:#f1f5f9;color:#334155;border:1px solid #cbd5e1;
     border-radius:6px;font-size:11px;font-weight:600;
     box-shadow:none;padding:5px 11px;letter-spacing:.2px;
-    display:inline-flex;align-items:center;gap:5px;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;gap:5px;cursor:pointer;
+    box-sizing:border-box;height:28px;line-height:1;
     font-family:inherit;white-space:nowrap;text-decoration:none;
   }
   header.main nav.main a{text-transform:uppercase}
@@ -73,6 +74,13 @@
   /* pill "Semplice" attiva */
   header.main nav.main button.btn-semplice-cfg.active{background:#2471a3;color:#fff;border-color:#2471a3}
   header.main nav.main button.btn-semplice-cfg.active:hover{background:#1a5276}
+  /* ===== gruppo percorsi (toolbar) ===== */
+  header.main nav.main .btn-percorso{text-transform:none}
+  header.main nav.main .btn-percorso.not-ready{opacity:.45}
+  header.main nav.main .btn-percorso.not-ready:hover{opacity:.7;background:#e2e8f0}
+  header.main nav.main .btn-percorso.pactive.ready{background:#149a3f;color:#fff;border-color:#149a3f;opacity:1;font-weight:800}
+  header.main nav.main .btn-percorso.pactive.ready:hover{background:#0f7d33;color:#fff}
+  header.main nav.main .btn-percorso.pactive.not-ready{outline:2px solid #149a3f;outline-offset:1px;opacity:.85}
   /* input file nascosti */
   #input-carica-cfg{display:none}
 
@@ -336,13 +344,20 @@
   </a>
   <nav class="main">
     <input type="text" id="cliente-cfg" class="cliente-cfg" placeholder="Cliente…" title="Nome cliente / azienda" autocomplete="off">
-    <span id="badge-versione">vs163 · 25/06/2026</span>
+    <span id="badge-versione">vs164 · 25/06/2026</span>
     <button class="btn-salva-cfg" title="Salva configurazione come file JSON">💾 Salva</button>
     <label class="btn-carica-cfg" title="Carica configurazione vsn01 oppure importa JSON da Bilancio Energetico be41">📂 Carica / Import BE<input type="file" id="input-carica-cfg" accept=".json"></label>
     <button class="btn-pulisci-cfg" id="btn-pulisci" title="Azzera tutti i campi">🗑 Pulisci</button>
     <button class="btn-semplice-cfg" id="btn-compilato" title="Compilato: mostra solo titoli e pill con dati inseriti">◉ Compilato</button>
     <button class="btn-salva-cfg" title="Stampa preventivo">🖨️ Stampa</button>
-    <a href="#">Cambia percorso</a>
+    <span class="percorso-group" style="display:inline-flex;gap:4px;flex-wrap:wrap;align-items:center;border-left:1px solid #e2e8f0;margin-left:4px;padding-left:8px">
+      <button type="button" class="btn-percorso ready pactive" data-percorso="casa" title="Percorso Casa privata (attivo)">🏠 Casa</button>
+      <button type="button" class="btn-percorso not-ready" data-percorso="condo" title="Condominio (in sviluppo)">🏢 Condominio</button>
+      <button type="button" class="btn-percorso not-ready" data-percorso="azienda" title="Azienda / Commerciale (in sviluppo)">🏭 Azienda</button>
+      <button type="button" class="btn-percorso not-ready" data-percorso="hotel" title="Hotel / Hospitality (in sviluppo)">🏨 Hotel</button>
+      <button type="button" class="btn-percorso not-ready" data-percorso="complesso" title="Complesso multiproprietà (in sviluppo)">🏗️ Complesso</button>
+      <button type="button" class="btn-percorso not-ready" data-percorso="produttore" title="Campo FV / Produttore (in sviluppo)">⚡ Campo FV</button>
+    </span>
     <a href="#contatti">Contatti</a>
   </nav>
 </header>
@@ -350,8 +365,6 @@
 <div class="breadcrumb">
   <span class="sep">›</span>
   <span class="current">Configuratore</span>
-  <span class="badge-percorso" id="badge-percorso">🏠 Casa privata</span>
-  <button id="btn-switch-percorso" type="button" style="font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid #cbd5e1;background:#f1f5f9;color:#334155;cursor:pointer;font-weight:600;margin-left:4px;" title="Cambia percorso tra Casa e Azienda">⇄ Percorso</button>
   <div class="mode-toggle" id="mode-toggle">
     <button type="button" class="active" data-mode="previsionale">Previsionale</button>
     <button type="button" data-mode="reale">Reale</button>
@@ -1489,13 +1502,18 @@
     if(typeof cascadeAH==='function') cascadeAH();
     if(typeof computeBusinessPlan==='function') computeBusinessPlan();
     if(typeof updateSaldi==='function') updateSaldi();
+    document.querySelectorAll('.btn-percorso').forEach(b=>b.classList.toggle('pactive', b.dataset.percorso===p));
   }
 
+  // ── Gruppo 6 percorsi: solo 'casa' completo; gli altri cliccabili ma attenuati (calc come azienda finché non completati) ──
+  const PCALC={casa:'casa',condo:'azienda',azienda:'azienda',hotel:'azienda',complesso:'azienda',produttore:'azienda'};
   (function(){
-    const btn = document.getElementById('btn-switch-percorso');
-    if(btn) btn.addEventListener('click', ()=>{
-      const cur = document.body.dataset.percorso || 'casa';
-      setPercorso(cur === 'azienda' ? 'casa' : 'azienda');
+    document.querySelectorAll('.btn-percorso').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const p=b.dataset.percorso;
+        setPercorso(PCALC[p]||'casa');
+        document.querySelectorAll('.btn-percorso').forEach(x=>x.classList.toggle('pactive', x===b));
+      });
     });
   })();
 
