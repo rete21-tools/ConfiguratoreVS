@@ -49,6 +49,9 @@
 
   nav.main{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
   /* badge versione */
+  .cliente-cfg{font-size:12px;font-weight:700;color:#1e3a5f;background:#fff;border:1px solid var(--grigio-bordo);border-radius:8px;padding:4px 10px;min-width:150px;margin-right:6px;outline:none}
+  .cliente-cfg:focus{border-color:#3b82f6}
+  .cliente-cfg::placeholder{color:#94a3b8;font-weight:500}
   #badge-versione{font-size:10px;font-weight:700;letter-spacing:.4px;color:var(--grigio-medio);padding:3px 8px;border:1px solid var(--grigio-bordo);border-radius:12px;background:#f7f7f7;margin-right:6px}
 
   /* tutti i controlli uniformi */
@@ -332,7 +335,8 @@
     <span class="logo-fallback">RETE 21</span>
   </a>
   <nav class="main">
-    <span id="badge-versione">vs156 · 24/06/2026</span>
+    <input type="text" id="cliente-cfg" class="cliente-cfg" placeholder="Cliente…" title="Nome cliente / azienda" autocomplete="off">
+    <span id="badge-versione">vs160 · 25/06/2026</span>
     <button class="btn-salva-cfg" title="Salva configurazione come file JSON">💾 Salva</button>
     <label class="btn-carica-cfg" title="Carica configurazione vsn01 oppure importa JSON da Bilancio Energetico be41">📂 Carica / Import BE<input type="file" id="input-carica-cfg" accept=".json"></label>
     <button class="btn-pulisci-cfg" id="btn-pulisci" title="Azzera tutti i campi">🗑 Pulisci</button>
@@ -723,7 +727,7 @@
               </div>
               <div class="vc-side">
                 <div class="vc-name" contenteditable="true" role="textbox" tabindex="-1" data-placeholder="Etichetta…">Spesa elettrica annua (€)</div>
-                <input class="vc-val" placeholder="es. 1125" inputmode="numeric" data-unit="€" aria-label="Spesa elettrica annua">
+                <input class="vc-val" placeholder="es. 1125" inputmode="numeric" data-unit="€" data-noncost="1" aria-label="Spesa elettrica annua">
               </div>
             </div>
           </div>
@@ -741,7 +745,7 @@
               </div>
               <div class="vc-side">
                 <div class="vc-name" contenteditable="true" role="textbox" tabindex="-1" data-placeholder="Etichetta…">Spesa gas annua (€)</div>
-                <input class="vc-val" placeholder="es. 1820" inputmode="numeric" data-unit="€" aria-label="Spesa gas annua">
+                <input class="vc-val" placeholder="es. 1820" inputmode="numeric" data-unit="€" data-noncost="1" aria-label="Spesa gas annua">
               </div>
             </div>
           </div>
@@ -759,7 +763,7 @@
               </div>
               <div class="vc-side">
                 <div class="vc-name" contenteditable="true" role="textbox" tabindex="-1" data-placeholder="Etichetta…">Spesa legna annua (€)</div>
-                <input class="vc-val" placeholder="es. 600" inputmode="numeric" data-unit="€" aria-label="Spesa legna annua">
+                <input class="vc-val" placeholder="es. 600" inputmode="numeric" data-unit="€" data-noncost="1" aria-label="Spesa legna annua">
               </div>
             </div>
           </div>
@@ -777,7 +781,7 @@
               </div>
               <div class="vc-side">
                 <div class="vc-name" contenteditable="true" role="textbox" tabindex="-1" data-placeholder="Etichetta…">Spesa gasolio annua (€)</div>
-                <input class="vc-val" placeholder="es. 1200" inputmode="numeric" data-unit="€" aria-label="Spesa gasolio annua">
+                <input class="vc-val" placeholder="es. 1200" inputmode="numeric" data-unit="€" data-noncost="1" aria-label="Spesa gasolio annua">
               </div>
             </div>
           </div>
@@ -1133,6 +1137,16 @@
           <div class="vc-info-pop">Kit di installazione per riscaldamento e sanitario.</div>
         </div>
 
+        <div class="vcard termico termico-varie" draggable="true">
+          <span class="vcard-num"></span>
+          <div class="vcard-cells">
+            <div class="vc-name" contenteditable="true" role="textbox" tabindex="-1" data-placeholder="Voce…">VARIE</div>
+            <input class="vc-val prezzo-field termico-val" inputmode="numeric" data-unit="€" aria-label="Varie">
+          </div>
+          <button class="vc-info" type="button" tabindex="-1" title="Informazioni">i</button>
+          <div class="vc-info-pop">Voci del preventivo PDF non riconducibili alle voci standard: in modalità Reale vengono sommate qui come importo complessivo. Campo modificabile.</div>
+        </div>
+
         <div class="vsection">
           <span class="vsection-caret">▾</span>
           <span class="vsection-title">Pratiche e gestione documentale</span>
@@ -1265,13 +1279,17 @@
 
           <div class="inc-block">
             <button class="vc-info" type="button" tabindex="-1" title="Informazioni">i</button>
-            <div class="vc-info-pop">Detrazione 50% sul fotovoltaico (recupero IRPEF in 10 anni). Detrazione ISEE: agevolazione in base all'ISEE, dove applicabile. "Nessuno" = costo netto FV = costo lordo IVA.</div>
+            <div class="vc-info-pop">Detrazione 50% sul fotovoltaico (recupero IRPEF in 10 anni). Detrazione ISEE: agevolazione in base all'ISEE, dove applicabile. "Nessuno" = costo netto FV = costo lordo IVA.<br><strong>RID</strong> sempre attivo (ritiro dedicato ~90 €/MWh sull'energia immessa). <strong>CER</strong> opzionale: premio ~0,11 €/kWh, prudenziale sul 30% dell'immesso.</div>
             <span class="vcard-num"></span>
             <div class="inc-head">Fotovoltaico</div>
             <div class="inc-btns" data-inc="fv">
               <button class="inc-btn active" type="button" data-val="nessuno">Nessuno</button>
               <button class="inc-btn" type="button" data-val="detr50">Detrazione 50%</button>
               <button class="inc-btn" type="button" data-val="isee">Detrazione ISEE</button>
+            </div>
+            <div class="inc-btns" data-inc="rid" data-multi="1" style="margin-top:8px;border-top:1px dashed #cbd5e1;padding-top:10px;">
+              <button class="inc-btn active" type="button" data-val="rid">RID</button>
+              <button class="inc-btn" type="button" data-val="cer">CER</button>
             </div>
           </div>
 
@@ -1320,16 +1338,6 @@
             </div>
           </div>
 
-          <div class="inc-block">
-            <button class="vc-info" type="button" tabindex="-1" title="Informazioni">i</button>
-            <div class="vc-info-pop">RID sempre attivo: ritiro dedicato 90 €/MWh sull'energia immessa. CER opzionale: Comunità Energetica Rinnovabile (premio 0,11 €/kWh stimato, in via prudenziale, solo sul 30% dell'energia immessa in rete).</div>
-            <span class="vcard-num"></span>
-            <div class="inc-head">RID · GAC · CER</div>
-            <div class="inc-btns" data-inc="rid" data-multi="1">
-              <button class="inc-btn active" type="button" data-val="rid">RID</button>
-              <button class="inc-btn" type="button" data-val="cer">CER</button>
-            </div>
-          </div>
 
           <div class="inc-block">
             <button class="vc-info" type="button" tabindex="-1" title="Informazioni">i</button>
@@ -1414,6 +1422,7 @@
     window.BE_FV_ANNUO = 0; window.BE_MOB_ANNUO = 0; window.BE_TERMICA_ANNUO = 0;
     const _beBadge = document.getElementById('be-imported-badge'); if(_beBadge) _beBadge.remove();
     document.querySelectorAll('.vc-val').forEach(i=>{ i.value=''; });
+    { const _ci=document.getElementById('cliente-cfg'); if(_ci) _ci.value=''; }   // Cliente (be41)
     INIT_DD.forEach((init,dd)=>{
       dd.dataset.value=init.val;
       const f=dd.querySelector('.vc-dd-field'); if(f) f.textContent=init.text;
@@ -1494,12 +1503,18 @@
     const activeMode = document.querySelector('.mode-toggle button.active');
     cfg.mode = activeMode ? activeMode.dataset.mode : 'previsionale';
     cfg.percorso = document.body.dataset.percorso || 'casa';
+    // Cliente (gestione come Bilancio Energetico be41)
+    const _ci = document.getElementById('cliente-cfg');
+    cfg.cliente = _ci ? (_ci.value || '').trim() : '';
     // BE computed (se presente)
     if (window.BE_COMPUTED) cfg.be_computed = window.BE_COMPUTED;
-    // file name
+    // Nome file dinamico (regole be41): Configuratore_<vsNNN>_<Cliente>_<gg-mm-aaaa>_<hhmm>.json
+    const _badge = document.getElementById('badge-versione');
+    const vsVer = ((_badge && _badge.textContent.match(/vs\d+/i)) || ['vsn01'])[0].toLowerCase();
+    const clienteNorm = (cfg.cliente || 'Cliente').replace(/\s+/g, '_');
     const now = new Date();
     const pad = n => String(n).padStart(2,'0');
-    const nome = 'Configuratore_vsn01_' + now.getFullYear() + pad(now.getMonth()+1) + pad(now.getDate()) + '_' + pad(now.getHours()) + pad(now.getMinutes()) + '.json';
+    const nome = 'Configuratore_' + vsVer + '_' + clienteNorm + '_' + pad(now.getDate()) + '-' + pad(now.getMonth()+1) + '-' + now.getFullYear() + '_' + pad(now.getHours()) + pad(now.getMinutes()) + '.json';
     const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; a.click();
   }
@@ -1509,6 +1524,8 @@
     // ── Caso A: JSON vsn01 salvato ──
     if (data.schema === 'Configuratore vsn01') {
       resetConfig();
+      // Cliente (gestione be41)
+      { const _ci=document.getElementById('cliente-cfg'); if(_ci) _ci.value = data.cliente || ''; }
       // ripristina valori
       if (data.vals) Object.entries(data.vals).forEach(([lbl, val]) => {
         const inp = document.querySelector('.vc-val[aria-label="'+lbl+'"]');
@@ -1538,7 +1555,15 @@
         applicaBeComputed(data.be_computed);
         showBEBadge(data.cliente);
       }
+      // FIX vs158: ricalcola FV/Accumulo/Linea vita/Antipiccione dal listino dopo
+      // il ripristino dei valori (altrimenti il prezzo FV resta vuoto e la
+      // detrazione non ha base imponibile su cui agire).
+      if(typeof recomputeG==='function') recomputeG();
       if(typeof cascadeAH==='function') cascadeAH();
+      // FIX vs159: sincronizza scenari Conto Termico, sconti in fattura e business plan
+      // come un click manuale sulla pill 44 (altrimenti dopo il caricamento sconti e
+      // grafico restano non configurati finché non si tocca la pill).
+      if(typeof ctSync==='function') ctSync();
       if(typeof updateSaldi==='function') updateSaldi();
       if(typeof computeBusinessPlan==='function') computeBusinessPlan();
       showToast('✅ Configurazione caricata');
@@ -1556,6 +1581,8 @@
   function importBE(data) {
     const c = data.computed || {};
     const inp = data.inputs || {};
+    // Cliente dal Bilancio Energetico
+    { const _ci=document.getElementById('cliente-cfg'); if(_ci && data.cliente) _ci.value = data.cliente; }
     // Popola bollette (sezione consumi)
     function setVcVal(label, value) {
       if (value == null || value === '' || isNaN(value)) return;
@@ -1591,7 +1618,11 @@
       window.BE_COMPUTED = c;
       applicaBeComputed(c);
     }
+    // FIX vs158: ricalcola prezzi FV/Accumulo dal listino dopo aver impostato la potenza.
+    if(typeof recomputeG==='function') recomputeG();
     if(typeof cascadeAH==='function') cascadeAH();
+    // FIX vs159: sincronizza scenari CT / sconti / business plan come un click sulla pill.
+    if(typeof ctSync==='function') ctSync();
     if(typeof updateSaldi==='function') updateSaldi();
     if(typeof computeBusinessPlan==='function') computeBusinessPlan();
     showBEBadge(data.cliente);
@@ -2052,7 +2083,7 @@
       let sum=0, n=0, node=sec.nextElementSibling;
       while(node && !node.classList.contains('vsection')){
         if(!node.classList.contains('pill-off')){
-          node.querySelectorAll('.vc-val[data-unit="€"]').forEach(inp=>{ const v=numVal(inp); if(v!=null){ sum+=v; n++; } });
+          node.querySelectorAll('.vc-val[data-unit="€"]:not([data-noncost])').forEach(inp=>{ const v=numVal(inp); if(v!=null){ sum+=v; n++; } });
         }
         node=node.nextElementSibling;
       }
@@ -2061,7 +2092,7 @@
       span.classList.toggle('neg', sum<0);
     });
     let lordo=0, netto=0, anyG=false;
-    list.querySelectorAll('.vc-val[data-unit="€"]').forEach(inp=>{
+    list.querySelectorAll('.vc-val[data-unit="€"]:not([data-noncost])').forEach(inp=>{   // FIX vs159: esclude le spese bollette dal Costo Impianto
       const card=inp.closest('.vcard'); if(card && card.classList.contains('pill-off')) return;
       const v=numVal(inp); if(v!=null){ netto+=v; if(v>0) lordo+=v; anyG=true; }
     });
@@ -2480,7 +2511,39 @@
           }
           missing.push(card.querySelector('.vc-name').textContent);
         });
-        alert('Import preventivo n.'+( (U.match(/PREVENTIVO N\.?\s*(\d+)/)||[])[1]||'?' )+': '+n+'/'+document.querySelectorAll('.termico').length+' voci valorizzate.'+(missing.length?('\nNon trovate: '+missing.join(', ')):''));
+        // ── Pill 38 "Varie": righe del preventivo con codice articolo NON tra le voci note ──
+        // Individua i codici articolo (6+ cifre); per ogni riga non riconosciuta prende
+        // l'ultimo importo (totale riga) e li somma. Escluse righe totale/IVA/imponibile.
+        const knownCodes = new Set(Object.values(MAP).map(o=>o.code));
+        const _allCodes=[]; let _cm; const _codeRe=/\b\d{6,}\b/g;
+        while((_cm=_codeRe.exec(U))!==null){ _allCodes.push({c:_cm[0], i:_cm.index}); }
+        _allCodes.sort((a,b)=>a.i-b.i);
+        let varie=0; const varieList=[];
+        for(let k=0;k<_allCodes.length;k++){
+          const cur=_allCodes[k];
+          if(knownCodes.has(cur.c)) continue;                 // voce nota: gia gestita sopra
+          const end=(k+1<_allCodes.length)?_allCodes[k+1].i:U.length;
+          let seg=U.slice(cur.i, Math.min(end, cur.i+250));
+          // taglia la riga prima dell'eventuale blocco totali/IVA (che non ha codice)
+          const _bad=seg.search(/TOTALE|IMPONIBILE|\bIVA\b|ACCONTO|\bSALDO\b|RIPORT|ARROTOND|OMAGGIO|SPESE DI/);
+          if(_bad>=0) seg=seg.slice(0,_bad);
+          const a=seg.match(/-?\d{1,3}(?:\.\d{3})*,\d{2}/g);
+          if(!a) continue;
+          const num=parseFloat(a[a.length-1].replace(/\./g,'').replace(',','.'));
+          if(isNaN(num)||num===0) continue;
+          varie+=num; varieList.push(cur.c+'='+a[a.length-1]);
+        }
+        varie=Math.round(varie*100)/100;
+        const varieInp=document.querySelector('.termico-val[aria-label="Varie"]');
+        if(varieInp){
+          varieInp.value = varie>0 ? fmtVal(String(varie).replace('.',','), varieInp.dataset.unit) : '';
+          if(typeof colorTermico==='function') colorTermico(varieInp);
+        }
+        if(typeof updateSaldi==='function') updateSaldi();
+        const _totVoci=document.querySelectorAll('.termico:not(.termico-varie)').length;
+        alert('Import preventivo n.'+( (U.match(/PREVENTIVO N\.?\s*(\d+)/)||[])[1]||'?' )+': '+n+'/'+_totVoci+' voci valorizzate.'
+          + (varie>0 ? ('\nVarie (non abbinate): '+fmtVal(String(varie).replace('.',','),'€')+' — '+varieList.length+' importi') : '')
+          + (missing.length?('\nNon trovate: '+missing.join(', ')):''));
       }catch(err){ alert('Errore lettura PDF: '+err.message); }
       e.target.value='';
     });
